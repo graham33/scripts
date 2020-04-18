@@ -17,7 +17,7 @@ import sys, os
 # 2 days trying to figure out the API from reading the entire source,
 # I can spend 10 minutes and parse output from /usr/bin/xrandr instead:
 import subprocess
-XRANDR = "/usr/bin/xrandr"
+XRANDR = "xrandr"
 
 # Order of preference of monitors. If there's an external monitor connected,
 # adjust that monitor rather than the built-in one.
