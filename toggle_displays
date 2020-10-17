@@ -1,90 +1,32 @@
 #!/usr/bin/env bash
 
-set -e
+EXTERNAL_OUTPUT="DP-2-1"
+INTERNAL_OUTPUT="eDP-1"
+STATE_FILE="/tmp/monitor_mode_$USER.dat"
 
-PRIMARY_DISPLAY=eDP-1
-EXT_CENTRE=DP-2-1
-EXT_LEFT=DP-2-2
-
-function display_connected {
-    xrandr | grep "$1 connected" >/dev/null
-}
-
-function display_monitor_active {
-    xrandr --listactivemonitors| grep "[\+\*]$1 " >/dev/null
-}
-
-if ! ( display_connected $PRIMARY_DISPLAY \
-          && display_connected $EXT_CENTRE \
-          && display_connected $EXT_LEFT )
-then
-    echo Not all displays are connected >&2
-    exit 1
-fi
-
-primary_inactive=
-if display_monitor_active $PRIMARY_DISPLAY
-then
-    echo Primary display $PRIMARY_DISPLAY active
+# if we don't have a file, start at zero
+if [ ! -f $STATE_FILE ] ; then
+    monitor_mode="all"
 else
-    echo Primary display $PRIMARY_DISPLAY inactive
-    primary_inactive=1
+    # otherwise read the value from the file
+    monitor_mode=$(cat $STATE_FILE)
 fi
 
-ext_inactive=
-if display_monitor_active $EXT_CENTRE && display_monitor_active $EXT_LEFT
-then
-    echo External displays active
+if [ $monitor_mode = "all" ]; then
+    monitor_mode="EXTERNAL"
+    echo "Switching to EXTERNAL ($EXTERNAL_OUTPUT only)"
+    xrandr --output $INTERNAL_OUTPUT --off --output $EXTERNAL_OUTPUT --auto
+elif [ $monitor_mode = "EXTERNAL" ]; then
+    monitor_mode="INTERNAL"
+    echo "Switching to INTERNAL ($INTERNAL_OUTPUT only)"
+    xrandr --output $INTERNAL_OUTPUT --auto --output $EXTERNAL_OUTPUT --off
+elif [ $monitor_mode = "INTERNAL" ]; then
+    monitor_mode="CLONE"
+    echo "Switching to CLONE ($INTERNAL_OUTPUT and $EXTERNAL_OUTPUT duplicated)"
+    xrandr --output $INTERNAL_OUTPUT --auto --output $EXTERNAL_OUTPUT --auto --same-as $INTERNAL_OUTPUT
 else
-    echo Some external displays inactive
-    ext_inactive=1
+    monitor_mode="all"
+    echo "Switching to ALL ($INTERNAL_OUTPUT and $EXTERNAL_OUTPUT as separately)"
+    xrandr --output $INTERNAL_OUTPUT --auto --output $EXTERNAL_OUTPUT --auto --left-of $INTERNAL_OUTPUT
 fi
-
-function activate_primary {
-    xrandr --output $PRIMARY_DISPLAY --auto
-}
-
-function activate_ext {
-    xrandr --output $EXT_CENTRE --auto --output $EXT_LEFT --auto --left-of $EXT_CENTRE --rotate left
-}
-
-function deactivate_primary {
-    xrandr --output $PRIMARY_DISPLAY --off
-}
-
-function deactivate_ext {
-    xrandr --output $EXT_LEFT --off
-    xrandr --output $EXT_CENTRE --off
-}
-
-function check {
-    read -p "$1 " -n 1 -r REPLY
-    echo    # move to a new line
-    [[ "$REPLY" =~ ^[Yy]$ ]]
-}
-
-# toggle
-if [ ! -z "$primary_inactive" ]
-then
-    # if primary is inactive, assume we want it back, and then ext off
-    activate_primary
-    if check "OK to deactivate ext?"
-    then
-        deactivate_ext
-    fi
-elif [ ! -z "$ext_inactive" ]
-then
-     # else if ext is inactive, assume we want all of them active, and then primary off
-     activate_ext
-     if check "OK to deactivate primary?"
-     then
-         deactivate_primary
-     fi
-else
-    # else everything is active, assume we want primary only
-    activate_primary
-    if check "OK to deactivate ext?"
-    then
-        deactivate_ext
-    fi
-fi
+echo $monitor_mode > $STATE_FILE
