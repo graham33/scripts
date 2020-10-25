@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
-EXTERNAL_OUTPUT="DP-2-1"
+EXTERNAL_OUTPUT_1="DP-2-3"
+EXTERNAL_OUTPUT_2="DP-1"
 INTERNAL_OUTPUT="eDP-1"
 STATE_FILE="/tmp/monitor_mode_$USER.dat"
 
@@ -14,19 +15,19 @@ fi
 
 if [ $monitor_mode = "all" ]; then
     monitor_mode="EXTERNAL"
-    echo "Switching to EXTERNAL ($EXTERNAL_OUTPUT only)"
-    xrandr --output $INTERNAL_OUTPUT --off --output $EXTERNAL_OUTPUT --auto
+    echo "Switching to EXTERNAL ($EXTERNAL_OUTPUT_1 and $EXTERNAL_OUTPUT_2 only)"
+    xrandr --output $INTERNAL_OUTPUT --off --output $EXTERNAL_OUTPUT_1 --auto --above $INTERNAL_OUTPUT --output $EXTERNAL_OUTPUT_2 --auto --left-of $EXTERNAL_OUTPUT_1 --rotate left
 elif [ $monitor_mode = "EXTERNAL" ]; then
     monitor_mode="INTERNAL"
     echo "Switching to INTERNAL ($INTERNAL_OUTPUT only)"
-    xrandr --output $INTERNAL_OUTPUT --auto --output $EXTERNAL_OUTPUT --off
+    xrandr --output $INTERNAL_OUTPUT --auto --output $EXTERNAL_OUTPUT_1 --off --output $EXTERNAL_OUTPUT_2 --off
 elif [ $monitor_mode = "INTERNAL" ]; then
     monitor_mode="CLONE"
-    echo "Switching to CLONE ($INTERNAL_OUTPUT and $EXTERNAL_OUTPUT duplicated)"
-    xrandr --output $INTERNAL_OUTPUT --auto --output $EXTERNAL_OUTPUT --auto --same-as $INTERNAL_OUTPUT
+    echo "Switching to CLONE ($INTERNAL_OUTPUT, $EXTERNAL_OUTPUT_1 and $EXTERNAL_OUTPUT_2 duplicated)"
+    xrandr --output $INTERNAL_OUTPUT --auto --output $EXTERNAL_OUTPUT_1 --auto --same-as $INTERNAL_OUTPUT --output $EXTERNAL_OUTPUT_2 --auto --same-as $INTERNAL_OUTPUT --rotate left
 else
     monitor_mode="all"
-    echo "Switching to ALL ($INTERNAL_OUTPUT and $EXTERNAL_OUTPUT as separately)"
-    xrandr --output $INTERNAL_OUTPUT --auto --output $EXTERNAL_OUTPUT --auto --left-of $INTERNAL_OUTPUT
+    echo "Switching to ALL ($INTERNAL_OUTPUT, $EXTERNAL_OUTPUT_1 and $EXTERNAL_OUTPUT_2 separately)"
+    xrandr --output $INTERNAL_OUTPUT --auto --output $EXTERNAL_OUTPUT_1 --auto --above $INTERNAL_OUTPUT --output $EXTERNAL_OUTPUT_2 --auto --left-of $EXTERNAL_OUTPUT_1 --rotate left
 fi
 echo $monitor_mode > $STATE_FILE
