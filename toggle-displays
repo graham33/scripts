@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-EXTERNAL_OUTPUT_1="DP-2-3"
-EXTERNAL_OUTPUT_2="DP-1"
+EXTERNAL_OUTPUT_1="DP-1-3"
+EXTERNAL_OUTPUT_2="DP-2"
 INTERNAL_OUTPUT="eDP-1"
 STATE_FILE="/tmp/monitor_mode_$USER.dat"
 
