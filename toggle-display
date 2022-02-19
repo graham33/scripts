@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+
+OUTPUT=$1
+
+if [ -z "$OUTPUT" ]; then
+    echo "Usage $0 <output>" >&2
+    exit 1
+fi
+
+if xrandr --listactivemonitors | grep $OUTPUT >/dev/null; then
+    xrandr --output $OUTPUT --off
+else
+    xrandr --output $OUTPUT --auto
+fi
