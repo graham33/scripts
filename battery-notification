@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/env sh
 #
 BAT=$(ls /sys/class/power_supply |grep BAT |head -n 1)
 get_perc (){
